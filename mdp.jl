@@ -32,18 +32,14 @@ function value_iteration(mdp::MDP, err)
     while error > err
       count += 1
       error = 0.0
-      for s in 1:mdp.ns
+      for s=1:mdp.ns
         last = V[s]
-        V[s] = max(map(a-> sum(map(s2 -> profit(s,s2,a), 1:mdp.ns)), 1:mdp.na))
+        V[s] = max(sum(profit(s,s2,a) for s2 in 1:mdp.ns) for a in 1:mdp.na)
         error = abs(last - V[s]) > error ? abs(last - V[s]) : error
       end
     end
-    policy = zeros(mdp.ns)
-    for s in 1:mdp.ns
-        policy[s] = indmax(map(a->sum(map(s2->profit(s,s2,a), 1:mdp.ns)), 1:mdp.na))
-        policy[s] = indmax(sum(profit(s,s2,a) for s2 in 1:mdp.ns) for a in 1:mdp.na)
-    println(count)
-    return V
+    policy = [indmax(sum(profit(s,s2,a) for s2 in 1:mdp.ns) for a in 1:mdp.na) for s in 1:mdp.ns]
+    return V,policy
 end
   
 end
