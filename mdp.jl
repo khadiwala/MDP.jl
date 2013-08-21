@@ -27,18 +27,22 @@ end
 function value_iteration(mdp::MDP, err)
     V = rand(mdp.ns)
     profit(s1,s2,a) = mdp.P[a,s1,s2] * (mdp.R[a,s1,s2] + mdp.gamma * V[s2])
-    error = err + 1
-    while error > err
-      error = 0.0
+    maxerr = err + 1
+    while maxerr > err
+      maxerr = 0.0
       for s=1:mdp.ns
         last = V[s]
         V[s] = max([sum([profit(s,s2,a) for s2 in 1:mdp.ns]) for a in 1:mdp.na])
         delta = abs(last - V[s])
-        error = delta > error ? delta : error
+        maxerr = delta > maxerr ? delta : maxerr
       end
     end
     policy = [indmax([sum([profit(s,s2,a) for s2 in 1:mdp.ns]) for a in 1:mdp.na]) for s in 1:mdp.ns]
     return policy,V
 end
+
+function policy_iteration(mdp::MDP)
+    policy = rand(1:mdp.ns)
+end     
   
 end
