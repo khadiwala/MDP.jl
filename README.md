@@ -7,6 +7,7 @@ Done
 ----
 
 Value Iteration
+
 Policy Iteration
 
 TODO
@@ -14,6 +15,9 @@ TODO
 
 Doc
 Performance
+
 Organization
+
 Packaging
+
 Q learning
