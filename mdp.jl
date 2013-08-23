@@ -30,6 +30,19 @@ function imap(f,itr)
     end
 end
 
+function argmax(itr,f)
+    maxi = itr[1]
+    maxf = f(itr[1])
+    for i=itr[2:]
+        val = f(i)
+        if val > maxf
+            maxi = i
+            maxf = val
+        end
+    end
+    return maxi
+end
+
 function value_iteration(mdp::MDP, err)
     V = zeros(mdp.ns)
 
@@ -48,7 +61,7 @@ function value_iteration(mdp::MDP, err)
         maxerr = delta > maxerr ? delta : maxerr
       end
     end
-    policy = [indmax([sum(profits(s,a)) for a=1:mdp.na]) for s=1:mdp.ns]
+    policy = [argmax(1:mdp.na,a->sum(profits(s,a))) for s=1:mdp.ns]
     return policy,V
 end
 
@@ -67,7 +80,7 @@ function policy_iteration(mdp::MDP)
       done = true
       for s=1:mdp.ns
         prev = policy[s]
-        policy = [indmax([sum(profits(s,a)) for a=1:mdp.na]) for s=1:mdp.ns]
+        policy = [argmax(1:mdp.na,a->sum(profits(s,a))) for s=1:mdp.ns]
         done &= policy[s] == prev
       end
     end
