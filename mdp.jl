@@ -1,6 +1,6 @@
 module markov
 
-export MDP, random_mdp, value_iteration
+export MDP, random_mdp, value_iteration, policy_iteration
 
 type MDP
   P
@@ -31,7 +31,7 @@ function imap(f,itr)
 end
 
 function value_iteration(mdp::MDP, err)
-    V = rand(mdp.ns)
+    V = zeros(mdp.ns)
 
     profits(s,a) = 
     @task for sn=1:mdp.ns
@@ -48,22 +48,30 @@ function value_iteration(mdp::MDP, err)
         maxerr = delta > maxerr ? delta : maxerr
       end
     end
-    policy = [indmax([sum([profit(s,s2,a) for s2 in 1:mdp.ns]) for a in 1:mdp.na]) for s in 1:mdp.ns]
+    policy = [indmax([sum(profits(s,a)) for a=1:mdp.na]) for s=1:mdp.ns]
     return policy,V
 end
 
 function policy_iteration(mdp::MDP)
-    policy = zeroes(mdp.ns)
-    while True
-      V[s] = [sum(imap(x->mdp.P[policy[s],s,x]*(mdp.R[policy[s],s,x] + mdp.gamma*V[x])),1:mdp.ns) for s=1:mdp.ns]
-      for s=1:mdp.ns
-        last = policy[s]
-        policy[s] = indmax([sum([profit(s,s2,a) for s2 in 1:mdp.ns]) for a in 1:mdp.na])
-        if policy[s] != last
-            continue
-      end
-      break 
+    policy = ones(mdp.ns)
+    V = zeros(mdp.ns)
+
+    profits(s,a) = 
+    @task for sn=1:mdp.ns
+        produce(mdp.P[a,s,sn] * (mdp.R[a,s,sn] + mdp.gamma * V[sn]))
     end
+
+    done = false
+    while !done
+      V = [sum(imap(x->mdp.P[policy[s],s,x]*(mdp.R[policy[s],s,x] + mdp.gamma*V[x]),1:mdp.ns)) for s=1:mdp.ns]
+      done = true
+      for s=1:mdp.ns
+        prev = policy[s]
+        policy = [indmax([sum(profits(s,a)) for a=1:mdp.na]) for s=1:mdp.ns]
+        done &= policy[s] == prev
+      end
+    end
+    return policy, V
 end
   
 end
