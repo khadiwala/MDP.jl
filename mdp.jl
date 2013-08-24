@@ -46,7 +46,7 @@ end
 function value_iteration(mdp::MDP, err)
     V = zeros(mdp.ns)
 
-    profits(s,a) = 
+    bellman(s,a) = 
     @task for sn=1:mdp.ns
         produce(mdp.P[a,s,sn] * (mdp.R[a,s,sn] + mdp.gamma * V[sn]))
     end
@@ -56,12 +56,12 @@ function value_iteration(mdp::MDP, err)
       maxerr = 0.0
       for s=1:mdp.ns
         prev = V[s]
-        V[s] = max(imap(sum, imap(a->profits(s,a), 1:mdp.na)))
+        V[s] = max(imap(sum, imap(a->bellman(s,a), 1:mdp.na)))
         delta = abs(prev - V[s])
         maxerr = delta > maxerr ? delta : maxerr
       end
     end
-    policy = [argmax(1:mdp.na,a->sum(profits(s,a))) for s=1:mdp.ns]
+    policy = [argmax(1:mdp.na,a->sum(bellman(s,a))) for s=1:mdp.ns]
     return policy,V
 end
 
@@ -69,7 +69,7 @@ function policy_iteration(mdp::MDP)
     policy = ones(mdp.ns)
     V = zeros(mdp.ns)
 
-    profits(s,a) = 
+    bellman(s,a) = 
     @task for sn=1:mdp.ns
         produce(mdp.P[a,s,sn] * (mdp.R[a,s,sn] + mdp.gamma * V[sn]))
     end
@@ -80,7 +80,7 @@ function policy_iteration(mdp::MDP)
       done = true
       for s=1:mdp.ns
         prev = policy[s]
-        policy = [argmax(1:mdp.na,a->sum(profits(s,a))) for s=1:mdp.ns]
+        policy = [argmax(1:mdp.na,a->sum(bellman(s,a))) for s=1:mdp.ns]
         done &= policy[s] == prev
       end
     end
