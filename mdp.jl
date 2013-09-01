@@ -43,16 +43,19 @@ function argmax(itr,f)
     return maxi
 end
 
-function value_iteration(mdp::MDP, err)
+function value_iteration(mdp::MDP, err=.01)
     V = zeros(mdp.ns)
 
     bellman(s,a) = 
     @task for sn=1:mdp.ns
         produce(mdp.P[a,s,sn] * (mdp.R[a,s,sn] + mdp.gamma * V[sn]))
     end
+    
+    # the maximum delta b/w iterations to ensure error < err
+    errdel = err * (1 - mdp.gamma) / (2 * mdp.gamma)
 
-    maxerr = err + 1
-    while maxerr > err
+    maxerr = errdel + 1
+    while maxerr > errdel
       maxerr = 0.0
       for s=1:mdp.ns
         prev = V[s]
