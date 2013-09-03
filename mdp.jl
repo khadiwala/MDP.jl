@@ -13,15 +13,14 @@ end
 MDP(P,R,gamma) = MDP(P,R,size(P,1),size(P,2),gamma)
 
 function random_mdp(a,s)
-    P = rand(a,s,s)
-    R = rand(a,s,s)
+    P,R = rand(a,s,s),rand(a,s,s)
     for i=1:a
       for j=1:s
         P[i,j,:] = P[i,j,:] / sum(P[i,j,:])
         R[i,j,:] = R[i,j,:] / sum(R[i,j,:])
       end
     end
-    MDP(P,R,rand()) 
+    MDP(P,R,.95) 
 end
 
 function imap(f,itr)
@@ -89,5 +88,17 @@ function policy_iteration(mdp::MDP)
     end
     return policy, V
 end
+
+function q_learner(s,a,alpha,gamma)
+  Q = zeros(s,a)
+  q_learn(state,f) =
+    choice = argmax(1:a,x->Q[state,x])
+    result,reward = f(state,choice)
+    Q[s,a] += alpha*(reward + gamma*(argmax(1:a,x->Q[result,x]) - Q[state,choice]))
+    return result
+  end
+  return q_learn
+end
+
   
 end
